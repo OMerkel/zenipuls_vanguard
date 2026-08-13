@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Zenipuls Vanguard - Arcade Classics</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Aldrich&family=Chakra+Petch:wght@400;500;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="css/index.css" />
+	</head>
+	<body>
+		<main class="arcade-shell" aria-label="Zenipuls Vanguard game">
+			<header class="hud">
+				<div class="metric">
+					<span class="label">SCORE</span>
+					<strong data-score>0000</strong>
+				</div>
+				<div class="metric">
+					<span class="label">HI-SCORE</span>
+					<strong data-high-score>0000</strong>
+				</div>
+				<div class="metric">
+					<span class="label">LEVEL</span>
+					<strong data-level>1</strong>
+				</div>
+				<div class="metric">
+					<span class="label">LIVES</span>
+					<strong data-lives>3</strong>
+				</div>
+			</header>
+
+			<section class="stage-panel" aria-label="Game stage">
+				<canvas
+					id="game-canvas"
+					width="960"
+					height="640"
+					role="img"
+					aria-label="Zenipuls Vanguard game board"
+				></canvas>
+			</section>
+
+			<footer class="control-deck">
+				<p class="status">
+					SYSTEM: <span data-status>PRESS START TO ENGAGE</span>
+				</p>
+				<div class="buttons">
+					<button type="button" data-action="start">Start</button>
+					<button type="button" class="ghost" data-action="pause">Pause / Resume</button>
+					<button type="button" class="ghost" data-action="mute">
+						Sound: <span data-mute>On</span>
+					</button>
+				</div>
+				<ul class="help">
+					<li>Move: Left/Right Arrow or A/D</li>
+					<li>Shoot: Space</li>
+					<li>Pause: P</li>
+					<li>Mute: M</li>
+				</ul>
+			</footer>
+		</main>
+
+		<script type="module" src="js/main.js"></script>
+	</body>
+</html>

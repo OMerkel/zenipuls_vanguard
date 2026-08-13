@@ -1,0 +1,17 @@
+{
+	"name": "Zenipuls Vanguard",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"lint": "biome check javascript/html5/src javascript/html5/test vitest.config.js README.md package.json",
+		"lint:fix": "biome check --write javascript/html5/src javascript/html5/test vitest.config.js README.md package.json",
+		"test": "vitest run",
+		"coverage": "vitest run --coverage"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.2.4",
+		"@vitest/coverage-v8": "^3.2.4",
+		"vitest": "^3.2.4"
+	}
+}
