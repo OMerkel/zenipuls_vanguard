@@ -185,12 +185,9 @@ Floating score popups provide immediate visual feedback for player actions and s
 
 ## 6. Interaction and Input Architecture
 
-- `keydown` events map to normalized lowercase token set.
-- `pressed` set tracks held keys for continuous movement.
-- `justPressed` set supports edge-trigger actions for fire/pause/mute.
-- `nextFrame()` clears one-shot transitions after each simulation step.
+`InputController` normalizes keyboard and canvas-pointer input into held state plus queued movement and action intents. It owns pointer capture and cleanup; `ZenipulsVanguardGame` owns movement and cooldown-gated action consumption.
 
-This dual-channel input model avoids repeat-fire bugs caused by native key repeat behavior.
+The complete event mapping, touch geometry, merge semantics, cancellation behavior, and public API are specified in the [Input Contract](input_contract.md).
 
 ## 7. Audio Architecture
 
@@ -231,7 +228,7 @@ Recommended extension points:
 - Add new enemy archetypes by extending sprite/type metadata in `config.js`.
 - Add power-ups by introducing a `powerups` collection and collision stage.
 - Add wave scripts via level descriptors with movement/firing modifiers.
-- Add touch controls by creating an alternate `InputController` adapter.
+- Extend `InputController` with additional intent sources while preserving its normalized input API.
 
 ## 12. UML Suite (Mermaid)
 

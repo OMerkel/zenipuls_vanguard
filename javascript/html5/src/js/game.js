@@ -16,7 +16,7 @@ export class ZenipulsVanguardGame {
 		this.canvas = canvas;
 		this.ctx = canvas.getContext("2d");
 		this.ui = ui;
-		this.input = new InputController();
+		this.input = new InputController(canvas);
 		this.audio = new AudioEngine();
 
 		this.canvas.width = GAME_CONFIG.width;
@@ -145,9 +145,9 @@ export class ZenipulsVanguardGame {
 
 		this.player.fireCooldown -= dt;
 		if (
-			this.input.consumePress(" ") &&
 			this.player.fireCooldown <= 0 &&
-			!this.playerShot
+			!this.playerShot &&
+			this.input.consumeAction()
 		) {
 			this.playerShot = {
 				x: this.player.x + this.player.w / 2 - 2,
@@ -193,7 +193,9 @@ export class ZenipulsVanguardGame {
 		}
 
 		const minX = Math.min(...activeHostiles.map((hostile) => hostile.x));
-		const maxX = Math.max(...activeHostiles.map((hostile) => hostile.x + hostile.w));
+		const maxX = Math.max(
+			...activeHostiles.map((hostile) => hostile.x + hostile.w),
+		);
 
 		let shouldDrop = false;
 		if (
@@ -461,13 +463,13 @@ export class ZenipulsVanguardGame {
 
 		// Horizontal movement
 		this.recon.x += this.recon.dir * this.recon.speed * dt;
-		
+
 		// Sinusoidal vertical movement
 		this.recon.sinePhase += this.recon.sineFrequency * Math.PI * 2 * dt;
 		this.recon.y =
 			this.recon.baseY +
 			Math.sin(this.recon.sinePhase) * this.recon.sineAmplitude;
-		
+
 		if (this.recon.dir > 0 && this.recon.x > GAME_CONFIG.width + 60) {
 			this.recon.active = false;
 		}
@@ -519,7 +521,14 @@ export class ZenipulsVanguardGame {
 				maxSize = 5;
 				minSpeed = 50;
 				maxSpeed = 280;
-				particleColors = ["#ffff00", "#ffdd00", "#ffaa00", "#ff7700", "#ff3300", "#ff0000"];
+				particleColors = [
+					"#ffff00",
+					"#ffdd00",
+					"#ffaa00",
+					"#ff7700",
+					"#ff3300",
+					"#ff0000",
+				];
 			}
 			// Rows 1-2 (Raider): medium explosion with warm colors
 			else if (hostileRow === 1 || hostileRow === 2) {
@@ -528,7 +537,13 @@ export class ZenipulsVanguardGame {
 				maxSize = 4;
 				minSpeed = 40;
 				maxSpeed = 240;
-				particleColors = ["#ffdd44", "#ffbb22", "#ff8800", "#ff5500", "#ff3300"];
+				particleColors = [
+					"#ffdd44",
+					"#ffbb22",
+					"#ff8800",
+					"#ff5500",
+					"#ff3300",
+				];
 			}
 			// Rows 3-4 (Drone): keep as default with original color
 		}
@@ -536,7 +551,8 @@ export class ZenipulsVanguardGame {
 		for (let i = 0; i < particleCount; i += 1) {
 			const angle = Math.random() * Math.PI * 2;
 			const speed = randomInRange(minSpeed, maxSpeed);
-			const particleColor = particleColors[Math.floor(Math.random() * particleColors.length)];
+			const particleColor =
+				particleColors[Math.floor(Math.random() * particleColors.length)];
 			this.particles.push({
 				x,
 				y,
@@ -588,20 +604,28 @@ export class ZenipulsVanguardGame {
 		}
 	}
 
-	drawPixelSprite(x, y, spriteRows, color, scale = 4, glow = true, rotationDegrees = 0) {
+	drawPixelSprite(
+		x,
+		y,
+		spriteRows,
+		color,
+		scale = 4,
+		glow = true,
+		rotationDegrees = 0,
+	) {
 		const ctx = this.ctx;
 		if (glow) {
 			ctx.shadowColor = color;
 			ctx.shadowBlur = 14;
 		}
 		ctx.fillStyle = color;
-		
+
 		// Calculate sprite dimensions for rotation center
 		const spriteWidth = spriteRows[0].length * scale;
 		const spriteHeight = spriteRows.length * scale;
 		const centerX = x + spriteWidth / 2;
 		const centerY = y + spriteHeight / 2;
-		
+
 		// Apply rotation if needed
 		if (rotationDegrees !== 0) {
 			ctx.save();
@@ -609,7 +633,7 @@ export class ZenipulsVanguardGame {
 			ctx.rotate((rotationDegrees * Math.PI) / 180);
 			ctx.translate(-centerX, -centerY);
 		}
-		
+
 		for (let row = 0; row < spriteRows.length; row += 1) {
 			const rowData = spriteRows[row];
 			for (let col = 0; col < rowData.length; col += 1) {
@@ -618,11 +642,11 @@ export class ZenipulsVanguardGame {
 				}
 			}
 		}
-		
+
 		if (rotationDegrees !== 0) {
 			ctx.restore();
 		}
-		
+
 		ctx.shadowBlur = 0;
 	}
 
@@ -638,6 +662,9 @@ export class ZenipulsVanguardGame {
 		this.renderShots(ctx);
 		this.renderParticles(ctx);
 		this.renderFloatingScores(ctx);
+		if (this.status === "ready" || this.status === "running") {
+			this.input.renderTouchControls(ctx, this.canvas);
+		}
 		this.renderOverlays(ctx);
 	}
 
@@ -755,7 +782,13 @@ export class ZenipulsVanguardGame {
 		if (!this.recon.active) {
 			return;
 		}
-		this.drawPixelSprite(this.recon.x, this.recon.y, SPRITES.recon, "#ff6f6f", 4);
+		this.drawPixelSprite(
+			this.recon.x,
+			this.recon.y,
+			SPRITES.recon,
+			"#ff6f6f",
+			4,
+		);
 	}
 
 	renderParticles(ctx) {
@@ -847,4 +880,3 @@ export class ZenipulsVanguardGame {
 		window.requestAnimationFrame(this.tick);
 	}
 }
-

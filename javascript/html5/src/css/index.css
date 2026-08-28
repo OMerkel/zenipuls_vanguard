@@ -146,6 +146,11 @@ body::after {
 	max-width: 100%;
 	max-height: 100%;
 	aspect-ratio: 3 / 2;
+	/* Stop mobile browsers from claiming drags as pan/zoom and firing pointercancel. */
+	touch-action: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
 	border-radius: 10px;
 	background: #080f20;
 	box-shadow:

@@ -1,6 +1,6 @@
 # Zenipuls Vanguard
 
-An original fixed-shooter implementation built with HTML5 canvas, modular JavaScript, and a arcade presentation.
+An original fixed-shooter implementation built with HTML5 canvas, modular JavaScript, and an arcade presentation.
 
 ## Play Online
 
@@ -19,10 +19,11 @@ An original fixed-shooter implementation built with HTML5 canvas, modular JavaSc
 - `javascript/html5/src/css/index.css`: visual theme and responsive layout
 - `javascript/html5/src/js/game.js`: main game orchestration and frame pipeline
 - `javascript/html5/src/js/entities.js`: entity factory functions
-- `javascript/html5/src/js/input.js`: keyboard input adapter
+- `javascript/html5/src/js/input.js`: keyboard and pointer input adapter
 - `javascript/html5/src/js/audio.js`: audio synthesis adapter
 - `javascript/html5/src/js/utils.js`: shared math and collision utilities
 - `doc/software_architecture.md`: in-depth architecture and UML diagrams
+- `doc/input_contract.md`: keyboard, touch, and input-intent contract
 
 ## Requirements
 
