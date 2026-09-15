@@ -11,7 +11,7 @@ This project implements an original-style arcade fixed-shooter experience with m
 
 The architecture follows a layered, componentized model with clear module boundaries:
 
-- Presentation Layer: DOM HUD, control deck, and canvas scene composition.
+- Presentation Layer: DOM HUD, control deck, game canvas, and full-stage-panel touch-control overlay.
 - Application Layer: game orchestrator and state transitions.
 - Domain Layer: entities, movement rules, collision/resolution, scoring.
 - Infrastructure Layer: input event stream, audio synthesis, storage persistence.
@@ -50,7 +50,7 @@ The architecture follows a layered, componentized model with clear module bounda
 
 ### 3.1 Main Runtime Components
 
-- `index.html`: UI shell, semantic regions, HUD metrics, canvas node.
+- `index.html`: UI shell, semantic regions, HUD metrics, game canvas, and touch-control overlay canvas.
 - `main.js`: composition root, binds UI adapters and control event hooks.
 - `ZenipulsVanguardGame` (`game.js`): central runtime coordinator.
 - `InputController` (`input.js`): key state and edge-triggered actions.
@@ -67,7 +67,18 @@ The architecture follows a layered, componentized model with clear module bounda
 - Projectile state: single player shot + N hostile shots.
 - Environment state: stars, bunkers, particles, recon craft lifecycle, floating score popups.
 
-### 3.3 Update Pipeline per Frame
+### 3.3 Progressive Web App Runtime
+
+- `manifest.webmanifest` defines the installable application identity, `./` start URL and scope, fullscreen display mode, landscape orientation, dark theme colors, and the local launcher icon.
+- `main.js` registers `sw.js` with the `./` scope when the browser supports service workers.
+- `sw.js` precaches the application shell: HTML, CSS, JavaScript modules, the local SVG icon, and locally hosted font files.
+- Requests are served cache-first for cached resources. Successful same-origin network responses are added to the current cache for subsequent offline use; non-GET requests are left untouched.
+- Service-worker activation removes older cache versions and claims existing clients. Increment `CACHE_NAME` when the shell cache contents or cache strategy changes.
+- Installation requires a secure context: HTTPS in deployment or `localhost` during development. Direct `file://` loading cannot register the service worker or install the PWA.
+- The installed app launches without browser chrome in fullscreen mode. The manifest requests landscape orientation, while responsive CSS remains responsible for fitting the game stage to the available display.
+- Users install from the browser after opening the hosted game: Android and desktop Chromium expose **Install app** or **Add to Home screen** in the browser menu; iOS/iPadOS Safari exposes **Add to Home Screen** from the Share menu.
+
+### 3.4 Update Pipeline per Frame
 
 1. Capture user intent transitions (`consumePress`) for pause/mute/shoot.
 2. Skip world simulation if not running.
@@ -185,9 +196,9 @@ Floating score popups provide immediate visual feedback for player actions and s
 
 ## 6. Interaction and Input Architecture
 
-`InputController` normalizes keyboard and canvas-pointer input into held state plus queued movement and action intents. It owns pointer capture and cleanup; `ZenipulsVanguardGame` owns movement and cooldown-gated action consumption.
+`InputController` normalizes keyboard and stage-panel pointer input into held state plus queued movement and action intents. The game canvas renders the scene, while a separate stage-panel overlay canvas renders touch controls. The controller owns pointer tracking and cleanup; `ZenipulsVanguardGame` owns movement and cooldown-gated action consumption.
 
-The complete event mapping, touch geometry, merge semantics, cancellation behavior, and public API are specified in the [Input Contract](input_contract.md).
+The complete event mapping, stage-panel touch geometry, overlay visibility, merge semantics, cancellation behavior, and public API are specified in the [Input Contract](input_contract.md).
 
 ## 7. Audio Architecture
 

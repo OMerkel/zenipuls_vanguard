@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`InputController` translates keyboard and playfield pointer events into normalized movement and action intents for `ZenipulsVanguardGame`. It owns input event state only; the game model owns movement, fire cooldown, and intent consumption timing.
+`InputController` translates keyboard and viewport pointer events into normalized movement and action intents for `ZenipulsVanguardGame`. It owns input event state only; the game model owns movement, fire cooldown, and intent consumption timing.
 
 ## Keyboard Mapping
 
@@ -17,26 +17,26 @@
 
 ## Pointer Touch Mapping
 
-The canvas is the playfield. Pointer coordinates are measured in its CSS-pixel bounding rectangle, so the mapping remains correct when the canvas is responsively scaled.
+Touch controls are rendered on a separate absolute canvas covering the visible stage panel. Pointer coordinates are measured in stage-panel CSS pixels, so joystick and action targets are independent of the scaled game board while remaining outside the control deck.
 
-- A pointer down inside the playfield and outside the action button creates the joystick at that touch origin.
-- The joystick pointer receives pointer capture. Additional non-action pointers do not replace the active joystick pointer.
-- The playfield sets `touch-action: none` and cancels raw `touchstart`/`touchmove` defaults so mobile browsers cannot reinterpret a drag as a page scroll and cancel the pointer stream.
-- Pointer movement computes its vector from the origin. Movement past the playfield edge is clamped to the playfield rectangle instead of being discarded.
+- A pointer down anywhere in the stage panel and outside the action button creates the joystick at that touch origin.
+- Pointer tracking is attached to the stage panel; the visual overlay uses `pointer-events: none` so it does not block the game canvas beneath it or any controls outside the panel.
+- The input surface sets `touch-action: none` and cancels raw `touchstart`/`touchmove` defaults so mobile browsers cannot reinterpret a drag as a page scroll and cancel the pointer stream.
+- Pointer movement computes its vector from the stage-panel origin and remains valid even when the drag leaves the game board.
 - The dead-zone radius is 18 CSS pixels.
 - The visual knob is clamped to 40 CSS pixels from the origin.
 - The dominant vector axis selects the direction. Equal horizontal and vertical magnitudes select the horizontal direction.
 - A selected joystick direction remains active until that joystick pointer is released or cancelled, including when the pointer returns to the dead zone.
-- Input beginning outside the playfield does not create a joystick.
+- `PERMANENT_JOYSTICK` in `config.js` controls initial visibility. When false, the controls appear after the first touch or pen input; when true, they are visible immediately in `ready` or `running` state.
 
 ## Action Button
 
-- The action button is a fixed circular target in the lower-right of the canvas, offset by a 24 CSS-pixel margin.
+- The action button is a fixed circular target in the lower-right of the stage panel, offset by a 24 CSS-pixel margin.
 - Its radius is 46 CSS pixels.
 - Pointer down in the action target immediately queues an `action` intent.
 - An action pointer never captures or clears the joystick pointer.
 - Joystick drag and action press can occur concurrently.
-- Touch controls are not drawn until the playfield has received its first touch or pen input, and they are drawn only while the game status is `ready` or `running`. Hiding the overlay does not disable the underlying pointer mapping.
+- Touch controls are drawn only while the game status is `ready` or `running`. When `PERMANENT_JOYSTICK` is false, they remain hidden until the first touch or pen input. Hiding the overlay does not disable the underlying pointer mapping.
 
 ## Intent Merge and Consumption
 

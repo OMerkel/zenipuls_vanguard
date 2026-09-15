@@ -12,11 +12,13 @@ import { choose, clamp, intersects, lerp, randomInRange } from "./utils.js";
 const STORAGE_KEY = "zenipuls_vanguard_high_score";
 
 export class ZenipulsVanguardGame {
-	constructor(canvas, ui) {
+	constructor(canvas, ui, touchControls = null, touchSurface = null) {
 		this.canvas = canvas;
 		this.ctx = canvas.getContext("2d");
 		this.ui = ui;
-		this.input = new InputController(canvas);
+		this.touchControls = touchControls;
+		this.touchContext = touchControls?.getContext("2d") || null;
+		this.input = new InputController(canvas, touchSurface || touchControls);
 		this.audio = new AudioEngine();
 
 		this.canvas.width = GAME_CONFIG.width;
@@ -662,8 +664,12 @@ export class ZenipulsVanguardGame {
 		this.renderShots(ctx);
 		this.renderParticles(ctx);
 		this.renderFloatingScores(ctx);
-		if (this.status === "ready" || this.status === "running") {
-			this.input.renderTouchControls(ctx, this.canvas);
+		if (this.touchContext) {
+			this.input.renderTouchControls(
+				this.touchContext,
+				this.touchControls,
+				this.status === "ready" || this.status === "running",
+			);
 		}
 		this.renderOverlays(ctx);
 	}

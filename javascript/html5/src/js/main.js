@@ -89,13 +89,19 @@ function setupControls(game) {
 
 function boot() {
 	const canvas = document.querySelector("#game-canvas");
+	const touchControls = document.querySelector("#touch-controls");
+	const stagePanel = canvas.closest(".stage-panel");
 	setupCanvasScaler(canvas);
 	const ui = bindUi();
-	const game = new ZenipulsVanguardGame(canvas, ui);
+	const game = new ZenipulsVanguardGame(canvas, ui, touchControls, stagePanel);
 	window.__zenipulsVanguardGame = game;
 
 	setupControls(game);
 	game.run();
+}
+
+if ("serviceWorker" in navigator) {
+	navigator.serviceWorker.register("./sw.js", { scope: "./" });
 }
 
 boot();

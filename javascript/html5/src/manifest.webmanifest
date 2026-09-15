@@ -1,0 +1,19 @@
+{
+	"name": "Zenipuls Vanguard",
+	"short_name": "Zenipuls",
+	"description": "An arcade space-defense game.",
+	"start_url": "./",
+	"scope": "./",
+	"display": "fullscreen",
+	"orientation": "landscape",
+	"background_color": "#05070f",
+	"theme_color": "#05070f",
+	"icons": [
+		{
+			"src": "icons/zenipuls.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any maskable"
+		}
+	]
+}

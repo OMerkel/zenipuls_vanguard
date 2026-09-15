@@ -1,10 +1,12 @@
+import { PERMANENT_JOYSTICK } from "./config.js";
+
 const DEAD_ZONE_RADIUS = 18;
 const MAX_KNOB_DISPLACEMENT = 40;
 const ACTION_BUTTON_RADIUS = 46;
 const ACTION_BUTTON_MARGIN = 24;
 
 export class InputController {
-	constructor(playfield = null) {
+	constructor(playfield = null, controlSurface = null) {
 		this.pressed = new Set();
 		this.justPressed = new Set();
 		this.pendingAction = false;
@@ -13,7 +15,7 @@ export class InputController {
 		this.joystickOrigin = null;
 		this.joystickKnob = null;
 		this.joystickDirection = null;
-		this.hasTouchInput = false;
+		this.hasTouchInput = PERMANENT_JOYSTICK;
 
 		window.addEventListener("keydown", (event) => {
 			const key = event.key.toLowerCase();
@@ -34,13 +36,18 @@ export class InputController {
 		});
 
 		if (playfield) {
-			this.bindPointerControls(playfield);
+			this.bindPointerControls(playfield, controlSurface);
 		}
 	}
 
-	bindPointerControls(playfield) {
+	bindPointerControls(playfield, controlSurface = null) {
+		const stageControls = Boolean(controlSurface);
+		const inputTarget = stageControls ? controlSurface : playfield;
 		if (playfield.style) {
 			playfield.style.touchAction = "none";
+		}
+		if (controlSurface?.style) {
+			controlSurface.style.touchAction = "none";
 		}
 
 		// Android browsers turn an unclaimed drag into a page scroll and then kill the
@@ -51,48 +58,62 @@ export class InputController {
 				event.preventDefault();
 			}
 		};
-		playfield.addEventListener("touchstart", swallowTouch, { passive: false });
-		playfield.addEventListener("touchmove", swallowTouch, { passive: false });
+		inputTarget.addEventListener("touchstart", swallowTouch, {
+			passive: false,
+		});
+		inputTarget.addEventListener("touchmove", swallowTouch, { passive: false });
 
-		playfield.addEventListener("pointerdown", (event) => {
-			if (event.pointerType === "touch" || event.pointerType === "pen") {
-				this.hasTouchInput = true;
-			}
-			const point = this.getPlayfieldPoint(playfield, event);
-			if (!point) {
-				return;
-			}
-			if (this.isActionPoint(point)) {
-				this.pendingAction = true;
-				return;
-			}
-			if (this.joystickPointerId !== null) {
-				return;
-			}
+		inputTarget.addEventListener(
+			"pointerdown",
+			(event) => {
+				if (event.pointerType === "touch" || event.pointerType === "pen") {
+					this.hasTouchInput = true;
+				}
+				const point = stageControls
+					? this.getPlayfieldPoint(controlSurface, event)
+					: this.getPlayfieldPoint(playfield, event);
+				if (!point) {
+					return;
+				}
+				if (this.isActionPoint(point)) {
+					this.pendingAction = true;
+					return;
+				}
+				if (this.joystickPointerId !== null) {
+					return;
+				}
 
-			this.joystickPointerId = event.pointerId;
-			this.joystickOrigin = point;
-			this.joystickKnob = point;
-			try {
-				playfield.setPointerCapture?.(event.pointerId);
-			} catch {
-				// Capture is best-effort; drags are clamped to the playfield anyway.
-			}
-			if (event.cancelable) {
-				event.preventDefault();
-			}
-		}, { passive: false });
+				this.joystickPointerId = event.pointerId;
+				this.joystickOrigin = point;
+				this.joystickKnob = point;
+				if (!stageControls) {
+					try {
+						playfield.setPointerCapture?.(event.pointerId);
+					} catch {
+						// Capture is best-effort; the stage panel continues tracking the pointer.
+					}
+				}
+				if (event.cancelable) {
+					event.preventDefault();
+				}
+			},
+			{ passive: false },
+		);
 
 		const handleMove = (event) => {
 			if (event.pointerId !== this.joystickPointerId) {
 				return;
 			}
-			this.updateJoystick(this.getPlayfieldPoint(playfield, event, true));
+			this.updateJoystick(
+				stageControls
+					? this.getPlayfieldPoint(controlSurface, event, true)
+					: this.getPlayfieldPoint(playfield, event, true),
+			);
 			if (event.cancelable) {
 				event.preventDefault();
 			}
 		};
-		playfield.addEventListener("pointermove", handleMove, { passive: false });
+		inputTarget.addEventListener("pointermove", handleMove, { passive: false });
 
 		const releasePointer = (event) => {
 			if (event.pointerId !== this.joystickPointerId) {
@@ -100,14 +121,16 @@ export class InputController {
 			}
 			const pointerId = this.joystickPointerId;
 			this.clearJoystick();
-			try {
-				playfield.releasePointerCapture?.(pointerId);
-			} catch {
-				// Capture may already have been lost.
+			if (!stageControls) {
+				try {
+					playfield.releasePointerCapture?.(pointerId);
+				} catch {
+					// Capture may already have been lost.
+				}
 			}
 		};
-		playfield.addEventListener("pointerup", releasePointer);
-		playfield.addEventListener("pointercancel", releasePointer);
+		inputTarget.addEventListener("pointerup", releasePointer);
+		inputTarget.addEventListener("pointercancel", releasePointer);
 	}
 
 	getPlayfieldPoint(playfield, event, clampToBounds = false) {
@@ -183,23 +206,35 @@ export class InputController {
 		this.pressed.delete("arrowright");
 	}
 
-	renderTouchControls(ctx, playfield) {
-		if (!this.hasTouchInput) {
+	renderTouchControls(ctx, playfield, visible = true) {
+		const rect = playfield.getBoundingClientRect();
+		const isOverlaySurface = playfield.id === "touch-controls";
+		const width = isOverlaySurface
+			? Math.max(1, Math.floor(rect.width))
+			: playfield.width || rect.width;
+		const height = isOverlaySurface
+			? Math.max(1, Math.floor(rect.height))
+			: playfield.height || rect.height;
+		if (playfield.width !== width || playfield.height !== height) {
+			playfield.width = width;
+			playfield.height = height;
+		}
+		ctx.clearRect(0, 0, width, height);
+		if (!visible || !this.hasTouchInput) {
 			return;
 		}
-		const rect = playfield.getBoundingClientRect();
 		if (!rect.width || !rect.height) {
 			return;
 		}
-		const scaleX = playfield.width / rect.width;
-		const scaleY = playfield.height / rect.height;
+		const scaleX = width / rect.width;
+		const scaleY = height / rect.height;
 		const toCanvasPoint = (point) => ({
 			x: point.x * scaleX,
 			y: point.y * scaleY,
 		});
 		const actionCenter = toCanvasPoint({
-			x: rect.width - ACTION_BUTTON_MARGIN - ACTION_BUTTON_RADIUS,
-			y: rect.height - ACTION_BUTTON_MARGIN - ACTION_BUTTON_RADIUS,
+			x: width / scaleX - ACTION_BUTTON_MARGIN - ACTION_BUTTON_RADIUS,
+			y: height / scaleY - ACTION_BUTTON_MARGIN - ACTION_BUTTON_RADIUS,
 		});
 		const actionRadius = ACTION_BUTTON_RADIUS * Math.min(scaleX, scaleY);
 

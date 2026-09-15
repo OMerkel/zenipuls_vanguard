@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Zenipuls Vanguard</title>
+  <rect width="512" height="512" rx="96" fill="#05070f"/>
+  <path d="M256 62 286 132 320 164 342 226 430 292 342 304 326 386 282 354 256 438 230 354 186 386 170 304 82 292 170 226 192 164 226 132Z" fill="#8effae" stroke="#5af4ff" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M256 92 270 158 256 184 242 158Z" fill="#dbf5ff"/>
+  <path d="M218 210 256 184 294 210 282 294 256 322 230 294Z" fill="#ff9fb4" stroke="#ffe18a" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M112 292 180 278 204 304 170 326Z" fill="#5af4ff"/>
+  <path d="M400 292 332 278 308 304 342 326Z" fill="#5af4ff"/>
+  <path d="M212 354 238 376 220 442 190 390Z" fill="#ffe18a"/>
+  <path d="M300 354 274 376 292 442 322 390Z" fill="#ffe18a"/>
+</svg>

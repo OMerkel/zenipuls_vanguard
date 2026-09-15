@@ -18,6 +18,8 @@ export const GAME_CONFIG = {
 	starCount: 120,
 };
 
+export const PERMANENT_JOYSTICK = false;
+
 export const HOSTILE_ROWS = 5;
 export const HOSTILE_COLS = 11;
 

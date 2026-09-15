@@ -11,6 +11,7 @@ An original fixed-shooter implementation built with HTML5 canvas, modular JavaSc
 - Classic hostile-formation movement, edge-drop behavior, and escalating wave pressure.
 - Player cannon, laser firing cooldown, destructible bunkers, and recon ship bonus target.
 - Responsive HUD with score, high score, level, lives, pause, and mute controls.
+- Touch controls use a full-stage-panel overlay, allowing joystick placement anywhere within the game stage without covering the control deck.
 - Unit-tested core modules with strict coverage thresholds.
 
 ## Project Structure
@@ -19,7 +20,9 @@ An original fixed-shooter implementation built with HTML5 canvas, modular JavaSc
 - `javascript/html5/src/css/index.css`: visual theme and responsive layout
 - `javascript/html5/src/js/game.js`: main game orchestration and frame pipeline
 - `javascript/html5/src/js/entities.js`: entity factory functions
-- `javascript/html5/src/js/input.js`: keyboard and pointer input adapter
+- `javascript/html5/src/js/input.js`: keyboard and stage-panel pointer input adapter
+- `javascript/html5/src/js/config.js`: gameplay and UI configuration, including joystick visibility
+- `javascript/html5/src/fonts/`: locally hosted UI fonts and their licenses
 - `javascript/html5/src/js/audio.js`: audio synthesis adapter
 - `javascript/html5/src/js/utils.js`: shared math and collision utilities
 - `doc/software_architecture.md`: in-depth architecture and UML diagrams
@@ -54,6 +57,8 @@ Then open:
 http://localhost:8080
 ```
 
+The game is installable as a fullscreen PWA when served from `localhost` or HTTPS. On Android or desktop Chromium, open the browser menu and choose **Install app** or **Add to Home screen**. On iOS/iPadOS Safari, use **Share** and choose **Add to Home Screen**. The service worker caches the app shell and local fonts for offline launches. Opening `index.html` directly with `file://` does not enable PWA installation.
+
 Alternative in VS Code: use Live Server on `javascript/html5/src/index.html`.
 
 ### 2. Controls
@@ -63,6 +68,7 @@ Alternative in VS Code: use Live Server on `javascript/html5/src/index.html`.
 - Pause/Resume: P (or Pause button)
 - Mute: M (or Sound button)
 - Start/Restart: Start button
+- Touch: drag anywhere outside the lower-right Fire target to move; tap Fire to shoot
 
 ### 3. Development commands
 
@@ -105,3 +111,4 @@ Current implemented suite targets core logic modules (`audio`, `config`, `entiti
 
 - High score is persisted in browser local storage.
 - Rendering and simulation are driven by `requestAnimationFrame`.
+- Fonts are served locally from the hosted site; the game does not request fonts from third-party domains.
